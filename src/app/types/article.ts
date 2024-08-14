@@ -1,5 +1,8 @@
 export interface Article {
-  text: string; 
+  title: string;
+  content: string;
+  summary: string;
+  
 }
 
 export interface ArticleResponse {

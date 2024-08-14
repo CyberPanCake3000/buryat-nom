@@ -3,16 +3,28 @@ import Layout from '../app/layouts/Layout';
 import { strapiApi } from '@/app/utils/strapiApi';
 import { useEffect, useState } from 'react';
 import { Article } from '@/app/types';
+import { Tag } from '@/app/types';
 
+interface HomePageData {
+  articles: Article[];
+  tags: Tag[];
+}
 
 const Home: NextPage = () => {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<HomePageData | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await strapiApi.get<Article[]>('/articles'); // Укажи правильный endpoint
-        setData(result);
+        const [articlesResult, tagsResult] = await Promise.all([
+          strapiApi.get<Article[]>('/articles'),
+          strapiApi.get<Tag[]>('/tags'),
+        ]);
+
+        setData({
+          articles: articlesResult,
+          tags: tagsResult,
+        });
       } catch (error) {
         console.error('Error fetching data from Strapi:', error);
       }
@@ -27,7 +39,13 @@ const Home: NextPage = () => {
       {data && (
         <div>
           {/* Отобрази данные, полученные с Strapi */}
-          <div>{JSON.stringify(data, null, 2)}</div>
+          <div>
+            <h2>Articles</h2>
+            <pre>{JSON.stringify(data.articles, null, 2)}</pre>
+
+            <h2>Tags</h2>
+            <pre>{JSON.stringify(data.tags, null, 2)}</pre>
+          </div>
         </div>
       )}
     </Layout>
