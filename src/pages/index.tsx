@@ -1,55 +1,22 @@
-import type { NextPage } from 'next';
-import Layout from '../app/layouts/Layout';
-import { strapiApi } from '@/app/utils/strapiApi';
-import { useEffect, useState } from 'react';
-import { Article } from '@/app/types';
-import { Tag } from '@/app/types';
+import { ArticleCard } from '@/app/components/ArticleCard';
+import { useArticles } from '@/app/hooks/useArticles';
+// import Header from '@/app/layouts/Header';
+import Layout from '@/app/layouts/Layout';
 
-interface HomePageData {
-  articles: Article[];
-  tags: Tag[];
-}
+export default function HomePage() {
+  const { articles, isLoading, error } = useArticles();
 
-const Home: NextPage = () => {
-  const [data, setData] = useState<HomePageData | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [articlesResult, tagsResult] = await Promise.all([
-          strapiApi.get<Article[]>('/articles'),
-          strapiApi.get<Tag[]>('/tags'),
-        ]);
-
-        setData({
-          articles: articlesResult,
-          tags: tagsResult,
-        });
-      } catch (error) {
-        console.error('Error fetching data from Strapi:', error);
-      }
-    };
-
-    fetchData();
-  }, []);
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <Layout>
-      <h1>Welcome to our site!</h1>
-      {data && (
-        <div>
-          {/* Отобрази данные, полученные с Strapi */}
-          <div>
-            <h2>Articles</h2>
-            <pre>{JSON.stringify(data.articles, null, 2)}</pre>
-
-            <h2>Tags</h2>
-            <pre>{JSON.stringify(data.tags, null, 2)}</pre>
-          </div>
-        </div>
-      )}
+    <div>
+      <h1>Latest Articles</h1>
+      {articles.map((article) => (
+        <ArticleCard key={article.slug} article={article} />
+      ))}
+    </div>
     </Layout>
   );
-};
-
-export default Home;
+}
